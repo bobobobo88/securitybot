@@ -50,6 +50,7 @@ class BotCommands(commands.Cog):
         """Check user's invite count"""
         try:
             invite_count = self.data_manager.get_invite_count(interaction.user.id)
+            print(f"User {interaction.user.id} invite count: {invite_count}")
             
             embed = discord.Embed(
                 title="📨 Invite Statistics",
@@ -59,6 +60,7 @@ class BotCommands(commands.Cog):
             
             # Add leaderboard info
             leaderboard = self.data_manager.get_invites_leaderboard(5)
+            print(f"Invite leaderboard data: {leaderboard}")
             if leaderboard:
                 leaderboard_text = ""
                 for i, (user_id, count) in enumerate(leaderboard):

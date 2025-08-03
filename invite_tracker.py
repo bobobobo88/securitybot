@@ -46,6 +46,11 @@ class InviteTracker:
                 await self.data_manager.add_invite(used_invite.inviter.id, member.id)
                 
                 print(f"Member {member} was invited by {used_invite.inviter}")
+                print(f"Inviter ID: {used_invite.inviter.id}, Member ID: {member.id}")
+                
+                # Debug: Check invite count after adding
+                inviter_count = self.data_manager.get_invite_count(used_invite.inviter.id)
+                print(f"Inviter's total invites after recording: {inviter_count}")
                 
                 # Post to invite tracker channel
                 await self.post_invite_tracker_message(member, used_invite.inviter)
