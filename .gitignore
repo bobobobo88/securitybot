@@ -1,0 +1,32 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+env/
+venv/
+.venv/
+
+# Environment files
+.env
+*.env
+.env.local
+.env.production
+.env.development
+
+# VSCode
+.vscode/
+
+# macOS
+.DS_Store
+
+# Logs
+*.log
+
+# Data files (bot data)
+data/
+assets/watermark.png
+
+# IDE files
+.idea/
+*.swp
+*.swo
