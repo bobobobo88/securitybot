@@ -5,12 +5,15 @@ load_dotenv()
 
 # Bot Configuration
 BOT_TOKEN = os.getenv('DISCORD_TOKEN')
-GUILD_ID = int(os.getenv('GUILD_ID', 0))
+# Handle placeholder values in .env file
+guild_id_str = os.getenv('GUILD_ID', '1234567890123456789')
+GUILD_ID = int(guild_id_str) if guild_id_str.isdigit() else 1234567890123456789
 
 # Channel IDs (configure these in your .env file)
-VOUCH_CHANNEL_ID = int(os.getenv('VOUCH_CHANNEL_ID', 0))
-ORDER_CHANNEL_ID = int(os.getenv('ORDER_CHANNEL_ID', 0))
-SUPPORT_CHANNEL_ID = int(os.getenv('SUPPORT_CHANNEL_ID', 0))
+VOUCH_CHANNEL_ID = int(os.getenv('VOUCH_CHANNEL_ID', 1234567890123456789))
+# Support multiple order channels - comma-separated IDs
+ORDER_CHANNEL_IDS = [int(id.strip()) for id in os.getenv('ORDER_CHANNEL_IDS', '1234567890123456789,9876543210987654321').split(',') if id.strip() and id.strip().isdigit()]
+SUPPORT_CHANNEL_ID = int(os.getenv('SUPPORT_CHANNEL_ID', 1234567890123456789))
 
 # Cooldown Settings
 VOUCH_COOLDOWN_HOURS = 5

@@ -78,14 +78,15 @@ GUILD_ID=your_guild_id_here
 
 # Channel IDs
 VOUCH_CHANNEL_ID=1234567890123456789
-ORDER_CHANNEL_ID=1234567890123456789
+# Multiple order channels - comma-separated IDs
+ORDER_CHANNEL_IDS=1234567890123456789,9876543210987654321
 SUPPORT_CHANNEL_ID=1234567890123456789
 ```
 
 ### Channel Setup
 
 1. **Vouch Channel**: Where users post success screenshots
-2. **Order Channel**: Where `/order` commands are used
+2. **Order Channels**: Where `/order` commands are used (supports multiple channels)
 3. **Support Channel**: Where `/ticket` commands are used
 
 ## Commands

@@ -92,10 +92,14 @@ class VouchSystem:
 
     async def handle_vouch_channel(self, message: discord.Message):
         """Handle messages in vouch channel"""
+        print(f"Vouch channel message detected from {message.author}: {len(message.attachments)} attachments")
+        
         # Only process messages with image attachments
         if self.is_image_attachment(message):
+            print(f"Processing vouch image from {message.author}")
             await self.process_vouch(message)
         else:
+            print(f"Deleting non-image message from {message.author}")
             # Delete non-image messages
             try:
                 await message.delete()

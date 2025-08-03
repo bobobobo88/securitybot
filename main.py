@@ -62,6 +62,7 @@ class BobsDiscountBot(commands.Bot):
 
         # Handle vouch channel
         if message.channel.id == config.VOUCH_CHANNEL_ID:
+            print(f"Message in vouch channel from {message.author}")
             await self.vouch_system.handle_vouch_channel(message)
 
     async def on_member_join(self, member):

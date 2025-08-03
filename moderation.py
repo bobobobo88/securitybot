@@ -58,40 +58,38 @@ class Moderation:
             print(f"Error handling scam domain for user {message.author}: {e}")
 
     async def handle_order_channel(self, message: discord.Message):
-        """Handle order channel protection"""
-        if not message.content.startswith('/order'):
-            try:
-                # Delete the message
-                await message.delete()
-                
-                # Send ephemeral reply
-                await message.channel.send(
-                    f"{message.author.mention} Please use `/order` to place an order.",
-                    delete_after=10
-                )
-                
-            except discord.Forbidden:
-                print(f"Cannot delete message in order channel - insufficient permissions")
-            except Exception as e:
-                print(f"Error handling order channel message: {e}")
+        """Handle order channel protection - delete ALL messages"""
+        try:
+            # Delete the message
+            await message.delete()
+            
+            # Send reminder message
+            await message.channel.send(
+                f"{message.author.mention} Please use `/order` in order channels or `/ticket` in ticket channels.",
+                delete_after=10
+            )
+            
+        except discord.Forbidden:
+            print(f"Cannot delete message in order channel - insufficient permissions")
+        except Exception as e:
+            print(f"Error handling order channel message: {e}")
 
     async def handle_support_channel(self, message: discord.Message):
-        """Handle support channel protection"""
-        if not message.content.startswith('/ticket'):
-            try:
-                # Delete the message
-                await message.delete()
-                
-                # Send ephemeral reply
-                await message.channel.send(
-                    f"{message.author.mention} Please use `/ticket` to get support.",
-                    delete_after=10
-                )
-                
-            except discord.Forbidden:
-                print(f"Cannot delete message in support channel - insufficient permissions")
-            except Exception as e:
-                print(f"Error handling support channel message: {e}")
+        """Handle support channel protection - delete ALL messages"""
+        try:
+            # Delete the message
+            await message.delete()
+            
+            # Send reminder message
+            await message.channel.send(
+                f"{message.author.mention} Please use `/order` in order channels or `/ticket` in ticket channels.",
+                delete_after=10
+            )
+            
+        except discord.Forbidden:
+            print(f"Cannot delete message in support channel - insufficient permissions")
+        except Exception as e:
+            print(f"Error handling support channel message: {e}")
 
     async def check_message(self, message: discord.Message):
         """Main message checking function"""
@@ -110,7 +108,9 @@ class Moderation:
             return
 
         # Check channel-specific protections
-        if message.channel.id == config.ORDER_CHANNEL_ID:
+        if message.channel.id in config.ORDER_CHANNEL_IDS:
+            print(f"Message in order channel from {message.author}")
             await self.handle_order_channel(message)
         elif message.channel.id == config.SUPPORT_CHANNEL_ID:
+            print(f"Message in support channel from {message.author}")
             await self.handle_support_channel(message) 

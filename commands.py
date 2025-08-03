@@ -153,9 +153,9 @@ class BotCommands(commands.Cog):
         """Place an order (placeholder command)"""
         try:
             # Check if user is in order channel
-            if interaction.channel_id != config.ORDER_CHANNEL_ID:
+            if interaction.channel_id not in config.ORDER_CHANNEL_IDS:
                 await interaction.response.send_message(
-                    "Please use this command in the order channel.",
+                    "Please use this command in an order channel.",
                     ephemeral=True
                 )
                 return

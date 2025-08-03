@@ -21,7 +21,7 @@ python setup.py
 2. Right-click on your channels and "Copy ID"
 3. Update the channel IDs in `.env` file:
    - `VOUCH_CHANNEL_ID` - Where users post vouches
-   - `ORDER_CHANNEL_ID` - Where `/order` commands are used
+   - `ORDER_CHANNEL_IDS` - Where `/order` commands are used (comma-separated for multiple channels)
    - `SUPPORT_CHANNEL_ID` - Where `/ticket` commands are used
 
 ### 4. Invite Bot to Server

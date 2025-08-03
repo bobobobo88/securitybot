@@ -23,7 +23,7 @@ def test_config():
         # Check required variables
         required_vars = [
             'BOT_TOKEN', 'GUILD_ID', 'VOUCH_CHANNEL_ID', 
-            'ORDER_CHANNEL_ID', 'SUPPORT_CHANNEL_ID'
+            'ORDER_CHANNEL_IDS', 'SUPPORT_CHANNEL_ID'
         ]
         
         for var in required_vars:

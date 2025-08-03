@@ -73,7 +73,7 @@ def check_configuration():
         with open(".env", "r") as f:
             content = f.read()
         
-        required_vars = ["DISCORD_TOKEN", "GUILD_ID", "VOUCH_CHANNEL_ID", "ORDER_CHANNEL_ID", "SUPPORT_CHANNEL_ID"]
+        required_vars = ["DISCORD_TOKEN", "GUILD_ID", "VOUCH_CHANNEL_ID", "ORDER_CHANNEL_IDS", "SUPPORT_CHANNEL_ID"]
         for var in required_vars:
             if var in content and not content.split(var + "=")[1].split("\n")[0].startswith("your_"):
                 print(f"✅ {var} is configured")
