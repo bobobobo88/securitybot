@@ -31,11 +31,65 @@ class VouchSystem:
     async def download_attachment_directly(self, attachment: discord.Attachment) -> BytesIO:
         """Download attachment directly without using URL"""
         try:
+            print(f"Downloading attachment directly: {attachment.filename}, {attachment.size} bytes")
             data = await attachment.read()
+            print(f"Successfully downloaded {len(data)} bytes")
             return BytesIO(data)
         except Exception as e:
             print(f"Error downloading attachment directly: {e}")
             raise e
+
+    async def download_with_retry(self, attachment: discord.Attachment) -> BytesIO:
+        """Download attachment with multiple retry strategies"""
+        # Strategy 1: Direct download
+        try:
+            print("Strategy 1: Direct attachment download")
+            return await self.download_attachment_directly(attachment)
+        except Exception as e1:
+            print(f"Strategy 1 failed: {e1}")
+            
+            # Strategy 2: URL download with different headers
+            try:
+                print("Strategy 2: URL download with browser headers")
+                import aiohttp
+                headers = {
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                    'Accept': 'image/webp,image/apng,image/*,*/*;q=0.8',
+                    'Accept-Language': 'en-US,en;q=0.9',
+                    'Accept-Encoding': 'gzip, deflate, br',
+                    'Referer': 'https://discord.com/',
+                    'DNT': '1',
+                    'Connection': 'keep-alive',
+                    'Upgrade-Insecure-Requests': '1'
+                }
+                
+                async with aiohttp.ClientSession() as session:
+                    async with session.get(attachment.url, headers=headers, timeout=30) as response:
+                        if response.status == 200:
+                            data = await response.read()
+                            print(f"Strategy 2 successful: {len(data)} bytes")
+                            return BytesIO(data)
+                        else:
+                            raise Exception(f"HTTP {response.status}")
+            except Exception as e2:
+                print(f"Strategy 2 failed: {e2}")
+                
+                # Strategy 3: Try with different URL format
+                try:
+                    print("Strategy 3: Alternative URL format")
+                    # Try without query parameters
+                    base_url = attachment.url.split('?')[0]
+                    async with aiohttp.ClientSession() as session:
+                        async with session.get(base_url, headers=headers, timeout=30) as response:
+                            if response.status == 200:
+                                data = await response.read()
+                                print(f"Strategy 3 successful: {len(data)} bytes")
+                                return BytesIO(data)
+                            else:
+                                raise Exception(f"HTTP {response.status}")
+                except Exception as e3:
+                    print(f"Strategy 3 failed: {e3}")
+                    raise Exception(f"All download strategies failed. Last error: {e3}")
 
     async def process_vouch(self, message: discord.Message):
         """Process a vouch image - watermark and award points"""
@@ -78,18 +132,10 @@ class VouchSystem:
             try:
                 print(f"Processing vouch image from {message.author}")
                 
-                # Try direct download first, then URL as fallback
-                try:
-                    print("Attempting direct attachment download...")
-                    image_data = await self.download_attachment_directly(image_attachment)
-                    watermarked_image = self.image_processor.apply_watermark(image_data)
-                    print("Successfully processed image via direct download")
-                except Exception as direct_error:
-                    print(f"Direct download failed: {direct_error}")
-                    print("Trying URL download as fallback...")
-                    image_url = image_attachment.url
-                    watermarked_image = await self.image_processor.process_vouch_image(image_url)
-                    print("Successfully processed image via URL download")
+                # Use retry strategy to download image
+                image_data = await self.download_with_retry(image_attachment)
+                watermarked_image = self.image_processor.apply_watermark(image_data)
+                print("Successfully processed image with watermark")
                 
                 # Upload watermarked image
                 file = discord.File(watermarked_image, filename="vouch_watermarked.png")
@@ -117,10 +163,45 @@ class VouchSystem:
             except Exception as e:
                 print(f"Error processing vouch image: {e}")
                 print(f"Attachment info: {image_attachment.filename}, {image_attachment.content_type}, {image_attachment.size} bytes")
-                await message.channel.send(
-                    f"{message.author.mention} Error processing your image. Please try again with a different image.",
-                    delete_after=10
-                )
+                
+                # Fallback: Create a simple text-based vouch
+                try:
+                    print("Attempting fallback text-based vouch...")
+                    embed = discord.Embed(
+                        title="📸 Vouch from " + message.author.display_name,
+                        description=f"**{message.author.mention}** posted a vouch!",
+                        color=config.EMBED_COLORS['success']
+                    )
+                    embed.add_field(
+                        name="📎 Original File",
+                        value=f"`{image_attachment.filename}` ({image_attachment.size:,} bytes)",
+                        inline=False
+                    )
+                    embed.set_thumbnail(url=message.author.display_avatar.url)
+                    embed.timestamp = discord.utils.utcnow()
+                    
+                    await message.channel.send(embed=embed)
+                    
+                    # Award points even with fallback
+                    await self.data_manager.add_points(message.author.id, config.POINTS_PER_VOUCH)
+                    
+                    # Set cooldown only for non-admin users
+                    if not has_admin_role:
+                        await self.data_manager.set_cooldown(message.author.id)
+                    
+                    # Send confirmation
+                    points = self.data_manager.get_points(message.author.id)
+                    await message.channel.send(
+                        f"Thanks for posting success {message.author.mention}! You now have {points} point(s). 💰",
+                        delete_after=10
+                    )
+                    
+                except Exception as fallback_error:
+                    print(f"Fallback also failed: {fallback_error}")
+                    await message.channel.send(
+                        f"{message.author.mention} Error processing your image. Please try again with a different image.",
+                        delete_after=10
+                    )
 
         except Exception as e:
             print(f"Error in vouch processing: {e}")
