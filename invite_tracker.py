@@ -12,11 +12,14 @@ class InviteTracker:
     async def cache_invites(self):
         """Cache all current invites for tracking"""
         try:
-            guild = self.bot.get_guild(config.GUILD_ID)
-            if guild:
+            # Get the first guild the bot is in (most bots are only in one guild)
+            if self.bot.guilds:
+                guild = self.bot.guilds[0]
                 invites = await guild.invites()
                 self.invite_cache = {invite.code: invite.uses for invite in invites}
-                print(f"Cached {len(self.invite_cache)} invites")
+                print(f"Cached {len(self.invite_cache)} invites for guild: {guild.name}")
+            else:
+                print("No guilds found for invite caching")
         except Exception as e:
             print(f"Error caching invites: {e}")
 
@@ -65,7 +68,7 @@ class InviteTracker:
                 )
                 embed.add_field(
                     name="Getting Started",
-                    value="• Use `/order` to place orders\n• Use `/ticket` for support\n• Post vouches in the vouch channel for points!",
+                    value="• Post vouches in the vouch channel for points!\n• Check your points with `/points`\n• View leaderboards with `/leaderboard`",
                     inline=False
                 )
                 await welcome_channel.send(embed=embed)

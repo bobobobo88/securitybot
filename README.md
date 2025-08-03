@@ -23,9 +23,8 @@ A comprehensive auto-moderation Discord bot designed specifically for Bob's Disc
 - **Statistics**: Detailed tracking and reporting
 
 ### 🎫 Support System
-- **Ticket Creation**: `/ticket` command creates private support channels
-- **Order System**: `/order` command for placing orders (placeholder)
-- **Channel Protection**: Ensures only proper commands are used in designated channels
+- **Channel Protection**: Maintains clean order and support channels by deleting all messages
+- **Ephemeral Messages**: Sends private reminders to users about proper channel usage
 
 ## Setup Instructions
 
@@ -90,8 +89,8 @@ ADMIN_ROLE_ID=1234567890123456789
 ### Channel Setup
 
 1. **Vouch Channel**: Where users post success screenshots
-2. **Order Channels**: Where `/order` commands are used (supports multiple channels)
-3. **Support Channel**: Where `/ticket` commands are used
+2. **Order Channels**: Protected channels where all messages are deleted (supports multiple channels)
+3. **Support Channel**: Protected channel where all messages are deleted
 
 ## Commands
 
@@ -99,8 +98,6 @@ ADMIN_ROLE_ID=1234567890123456789
 
 - `/points` - Check your current point balance
 - `/invites` - Check your invite count
-- `/ticket` - Create a support ticket
-- `/order` - Place an order (placeholder)
 - `/leaderboard` - View points leaderboard
 
 ## Features in Detail

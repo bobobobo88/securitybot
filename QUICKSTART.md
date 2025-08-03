@@ -21,8 +21,8 @@ python setup.py
 2. Right-click on your channels and "Copy ID"
 3. Update the channel IDs in `.env` file:
    - `VOUCH_CHANNEL_ID` - Where users post vouches
-   - `ORDER_CHANNEL_IDS` - Where `/order` commands are used (comma-separated for multiple channels)
-   - `SUPPORT_CHANNEL_ID` - Where `/ticket` commands are used
+   - `ORDER_CHANNEL_IDS` - Protected channels where all messages are deleted (comma-separated for multiple channels)
+   - `SUPPORT_CHANNEL_ID` - Protected channel where all messages are deleted
    - `ADMIN_ROLE_ID` - Role ID for unlimited vouches (bypass cooldown)
 
 ### 4. Invite Bot to Server
@@ -60,7 +60,6 @@ python main.py
 ### Test Commands
 - `/points` - Check your points
 - `/invites` - Check your invites
-- `/ticket` - Create support ticket
 - `/leaderboard` - View leaderboard
 
 ## 🔧 Troubleshooting
