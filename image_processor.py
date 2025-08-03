@@ -1,6 +1,7 @@
 import os
 import aiofiles
 import aiohttp
+import asyncio
 from PIL import Image, ImageEnhance
 from io import BytesIO
 import config
@@ -49,13 +50,36 @@ class ImageProcessor:
 
     async def download_image(self, url: str) -> BytesIO:
         """Download image from URL"""
+        print(f"Attempting to download image from: {url}")
+        
+        # Add headers to mimic a browser request
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+        }
+        
         async with aiohttp.ClientSession() as session:
-            async with session.get(url) as response:
-                if response.status == 200:
-                    data = await response.read()
-                    return BytesIO(data)
-                else:
-                    raise Exception(f"Failed to download image: {response.status}")
+            try:
+                async with session.get(url, headers=headers, timeout=30) as response:
+                    print(f"Download response status: {response.status}")
+                    print(f"Response headers: {dict(response.headers)}")
+                    
+                    if response.status == 200:
+                        data = await response.read()
+                        print(f"Successfully downloaded {len(data)} bytes")
+                        return BytesIO(data)
+                    else:
+                        error_text = await response.text()
+                        print(f"Error response: {error_text}")
+                        raise Exception(f"Failed to download image: {response.status} - {error_text}")
+            except aiohttp.ClientError as e:
+                print(f"Network error downloading image: {e}")
+                raise Exception(f"Network error: {e}")
+            except asyncio.TimeoutError:
+                print("Timeout downloading image")
+                raise Exception("Timeout downloading image")
+            except Exception as e:
+                print(f"Unexpected error downloading image: {e}")
+                raise e
 
     def apply_watermark(self, image_data: BytesIO) -> BytesIO:
         """Apply watermark to image"""

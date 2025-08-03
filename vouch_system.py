@@ -27,6 +27,15 @@ class VouchSystem:
                 return attachment.url
         return None
 
+    async def download_attachment_directly(self, attachment: discord.Attachment) -> BytesIO:
+        """Download attachment directly without using URL"""
+        try:
+            data = await attachment.read()
+            return BytesIO(data)
+        except Exception as e:
+            print(f"Error downloading attachment directly: {e}")
+            raise e
+
     async def process_vouch(self, message: discord.Message):
         """Process a vouch image - watermark and award points"""
         try:
@@ -46,9 +55,14 @@ class VouchSystem:
                 )
                 return
 
-            # Get image URL
-            image_url = self.get_image_url(message)
-            if not image_url:
+            # Get image attachment
+            image_attachment = None
+            for attachment in message.attachments:
+                if attachment.content_type and attachment.content_type.startswith('image/'):
+                    image_attachment = attachment
+                    break
+            
+            if not image_attachment:
                 await message.delete()
                 await message.channel.send(
                     f"{message.author.mention} Please attach an image with your vouch.",
@@ -61,7 +75,20 @@ class VouchSystem:
 
             # Process image with watermark
             try:
-                watermarked_image = await self.image_processor.process_vouch_image(image_url)
+                print(f"Processing vouch image from {message.author}")
+                
+                # Try direct download first, then URL as fallback
+                try:
+                    print("Attempting direct attachment download...")
+                    image_data = await self.download_attachment_directly(image_attachment)
+                    watermarked_image = self.image_processor.apply_watermark(image_data)
+                    print("Successfully processed image via direct download")
+                except Exception as direct_error:
+                    print(f"Direct download failed: {direct_error}")
+                    print("Trying URL download as fallback...")
+                    image_url = image_attachment.url
+                    watermarked_image = await self.image_processor.process_vouch_image(image_url)
+                    print("Successfully processed image via URL download")
                 
                 # Upload watermarked image
                 file = discord.File(watermarked_image, filename="vouch_watermarked.png")
@@ -88,8 +115,9 @@ class VouchSystem:
 
             except Exception as e:
                 print(f"Error processing vouch image: {e}")
+                print(f"Attachment info: {image_attachment.filename}, {image_attachment.content_type}, {image_attachment.size} bytes")
                 await message.channel.send(
-                    f"{message.author.mention} Error processing your image. Please try again.",
+                    f"{message.author.mention} Error processing your image. Please try again with a different image.",
                     delete_after=10
                 )
 
