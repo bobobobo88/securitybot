@@ -83,6 +83,43 @@ class BotCommands(commands.Cog):
 
 
 
+    @app_commands.command(name="scan", description="Scan all members for verification status (Admin only)")
+    async def scan_members(self, interaction: discord.Interaction):
+        """Scan all members and mute unverified ones"""
+        try:
+            # Check if user has admin role
+            has_admin_role = any(role.id == config.ADMIN_ROLE_ID for role in interaction.user.roles)
+            if not has_admin_role:
+                await interaction.response.send_message(
+                    "You don't have permission to use this command.",
+                    ephemeral=True
+                )
+                return
+
+            await interaction.response.send_message(
+                "Scanning all members for verification status... This may take a moment.",
+                ephemeral=True
+            )
+
+            # Import verification system
+            from verification_system import VerificationSystem
+            verification_system = VerificationSystem(self.bot)
+            
+            # Scan all members
+            await verification_system.scan_all_members()
+            
+            await interaction.followup.send(
+                "Member scan complete! Check console for details.",
+                ephemeral=True
+            )
+            
+        except Exception as e:
+            print(f"Error in scan command: {e}")
+            await interaction.response.send_message(
+                "Error scanning members. Please try again.",
+                ephemeral=True
+            )
+
     @app_commands.command(name="leaderboard", description="View points leaderboard")
     async def leaderboard(self, interaction: discord.Interaction):
         """Show points leaderboard"""

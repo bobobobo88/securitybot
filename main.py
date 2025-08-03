@@ -5,6 +5,7 @@ import config
 from moderation import Moderation
 from vouch_system import VouchSystem
 from invite_tracker import InviteTracker
+from verification_system import VerificationSystem
 from commands import BotCommands
 
 class BobsDiscountBot(commands.Bot):
@@ -24,6 +25,7 @@ class BobsDiscountBot(commands.Bot):
         self.moderation = Moderation(self)
         self.vouch_system = VouchSystem(self)
         self.invite_tracker = InviteTracker(self)
+        self.verification_system = VerificationSystem(self)
         
     async def setup_hook(self):
         """Setup hook for bot initialization"""
@@ -32,6 +34,9 @@ class BobsDiscountBot(commands.Bot):
         
         # Cache invites for tracking
         await self.invite_tracker.cache_invites()
+        
+        # Scan all members for verification status on startup
+        await self.verification_system.scan_all_members()
         
         print("Bot setup complete!")
 
@@ -66,8 +71,9 @@ class BobsDiscountBot(commands.Bot):
             await self.vouch_system.handle_vouch_channel(message)
 
     async def on_member_join(self, member):
-        """Handle new member joins for invite tracking"""
+        """Handle new member joins for invite tracking and verification"""
         await self.invite_tracker.handle_member_join(member)
+        await self.verification_system.check_and_mute_unverified(member)
 
     async def on_invite_create(self, invite):
         """Handle new invite creation"""
@@ -81,6 +87,10 @@ class BobsDiscountBot(commands.Bot):
         if invite.code in self.invite_tracker.invite_cache:
             del self.invite_tracker.invite_cache[invite.code]
         print(f"Invite deleted: {invite.code}")
+
+    async def on_member_update(self, before, after):
+        """Handle member updates for verification system"""
+        await self.verification_system.handle_member_update(before, after)
 
 async def main():
     """Main function to run the bot"""

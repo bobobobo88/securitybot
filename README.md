@@ -7,7 +7,8 @@ A comprehensive auto-moderation Discord bot designed specifically for Bob's Disc
 ### 🔒 Auto-Moderation System
 - **Invite Link Protection**: Automatically bans users who post Discord invite links anywhere in the server
 - **Scam Domain Blocking**: Deletes messages and bans users who post known malicious domains
-- **Channel Protection**: Maintains clean order and support channels by only allowing specific slash commands
+- **Channel Protection**: Maintains clean order and support channels by deleting all messages
+- **Verification System**: Automatically mutes users without the verified role
 
 ### 🖼️ Vouch Watermarking System
 - **Image Processing**: Automatically downloads, watermarks, and reposts images in the vouch channel
@@ -43,7 +44,7 @@ A comprehensive auto-moderation Discord bot designed specifically for Bob's Disc
    ```
 
 3. **Create environment file**:
-   - Copy `env_example.txt` to `.env`
+   - Run: `python setup_env.py` (or copy `env_example.txt` to `.env`)
    - Fill in your bot token and channel IDs
 
 4. **Configure channels**:
@@ -84,6 +85,10 @@ SUPPORT_CHANNEL_ID=1234567890123456789
 
 # Admin role for unlimited vouches
 ADMIN_ROLE_ID=1234567890123456789
+
+# Role IDs for verification system
+VERIFIED_ROLE_ID=1234567890123456789
+MUTED_ROLE_ID=1234567890123456789
 ```
 
 ### Channel Setup
@@ -99,6 +104,7 @@ ADMIN_ROLE_ID=1234567890123456789
 - `/points` - Check your current point balance
 - `/invites` - Check your invite count
 - `/leaderboard` - View points leaderboard
+- `/scan` - Scan all members for verification status (Admin only)
 
 ## Features in Detail
 

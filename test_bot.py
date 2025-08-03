@@ -23,7 +23,8 @@ def test_config():
         # Check required variables
         required_vars = [
             'BOT_TOKEN', 'GUILD_ID', 'VOUCH_CHANNEL_ID', 
-            'ORDER_CHANNEL_IDS', 'SUPPORT_CHANNEL_ID', 'ADMIN_ROLE_ID'
+            'ORDER_CHANNEL_IDS', 'SUPPORT_CHANNEL_ID', 'ADMIN_ROLE_ID',
+            'VERIFIED_ROLE_ID', 'MUTED_ROLE_ID'
         ]
         
         for var in required_vars:
@@ -189,6 +190,7 @@ def test_file_structure():
         'moderation.py',
         'vouch_system.py',
         'invite_tracker.py',
+        'verification_system.py',
         'commands.py',
         'image_processor.py',
         'requirements.txt',

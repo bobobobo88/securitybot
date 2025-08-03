@@ -18,6 +18,10 @@ SUPPORT_CHANNEL_ID = int(os.getenv('SUPPORT_CHANNEL_ID', 1234567890123456789))
 # Admin role for unlimited vouches
 ADMIN_ROLE_ID = int(os.getenv('ADMIN_ROLE_ID', 1234567890123456789))
 
+# Role IDs for verification system
+VERIFIED_ROLE_ID = int(os.getenv('VERIFIED_ROLE_ID', 1234567890123456789))
+MUTED_ROLE_ID = int(os.getenv('MUTED_ROLE_ID', 1234567890123456789))
+
 # Cooldown Settings
 VOUCH_COOLDOWN_HOURS = 5
 
