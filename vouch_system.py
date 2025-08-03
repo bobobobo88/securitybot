@@ -3,6 +3,7 @@ from discord.ext import commands
 import config
 from data_manager import DataManager
 from image_processor import ImageProcessor
+from io import BytesIO
 
 class VouchSystem:
     def __init__(self, bot):
