@@ -23,6 +23,7 @@ python setup.py
    - `VOUCH_CHANNEL_ID` - Where users post vouches
    - `ORDER_CHANNEL_IDS` - Where `/order` commands are used (comma-separated for multiple channels)
    - `SUPPORT_CHANNEL_ID` - Where `/ticket` commands are used
+   - `ADMIN_ROLE_ID` - Role ID for unlimited vouches (bypass cooldown)
 
 ### 4. Invite Bot to Server
 1. Go to OAuth2 > URL Generator in Discord Developer Portal

@@ -14,6 +14,7 @@ A comprehensive auto-moderation Discord bot designed specifically for Bob's Disc
 - **Stream Plug Logo**: Applies transparent Stream Plug logo overlay to all vouch images
 - **Point Rewards**: Awards 1 point per successful vouch with 5-hour cooldown
 - **Cooldown Enforcement**: Prevents spam by enforcing time limits between vouch submissions
+- **Admin Bypass**: Admin role can post unlimited vouches without cooldown restrictions
 
 ### 📊 Point & Invite Tracking
 - **Point System**: Persistent point balance tracking for all users
@@ -81,6 +82,9 @@ VOUCH_CHANNEL_ID=1234567890123456789
 # Multiple order channels - comma-separated IDs
 ORDER_CHANNEL_IDS=1234567890123456789,9876543210987654321
 SUPPORT_CHANNEL_ID=1234567890123456789
+
+# Admin role for unlimited vouches
+ADMIN_ROLE_ID=1234567890123456789
 ```
 
 ### Channel Setup

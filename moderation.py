@@ -63,9 +63,9 @@ class Moderation:
             # Delete the message
             await message.delete()
             
-            # Send reminder message
-            await message.channel.send(
-                f"{message.author.mention} Please use `/order` in order channels or `/ticket` in ticket channels.",
+            # Send ephemeral message to the user
+            await message.author.send(
+                f"Please use `/order` in order channels or `/ticket` in ticket channels.",
                 delete_after=10
             )
             
@@ -80,9 +80,9 @@ class Moderation:
             # Delete the message
             await message.delete()
             
-            # Send reminder message
-            await message.channel.send(
-                f"{message.author.mention} Please use `/order` in order channels or `/ticket` in ticket channels.",
+            # Send ephemeral message to the user
+            await message.author.send(
+                f"Please use `/order` in order channels or `/ticket` in ticket channels.",
                 delete_after=10
             )
             

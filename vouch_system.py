@@ -30,8 +30,11 @@ class VouchSystem:
     async def process_vouch(self, message: discord.Message):
         """Process a vouch image - watermark and award points"""
         try:
-            # Check if user is on cooldown
-            if self.data_manager.is_on_cooldown(message.author.id):
+            # Check if user has admin role (bypass cooldown)
+            has_admin_role = any(role.id == config.ADMIN_ROLE_ID for role in message.author.roles)
+            
+            # Check if user is on cooldown (skip for admins)
+            if not has_admin_role and self.data_manager.is_on_cooldown(message.author.id):
                 remaining = self.data_manager.get_cooldown_remaining(message.author.id)
                 hours = int(remaining.total_seconds() // 3600)
                 minutes = int((remaining.total_seconds() % 3600) // 60)
@@ -71,7 +74,10 @@ class VouchSystem:
 
                 # Award points
                 await self.data_manager.add_points(message.author.id, config.POINTS_PER_VOUCH)
-                await self.data_manager.set_cooldown(message.author.id)
+                
+                # Set cooldown only for non-admin users
+                if not has_admin_role:
+                    await self.data_manager.set_cooldown(message.author.id)
 
                 # Send confirmation
                 points = self.data_manager.get_points(message.author.id)
