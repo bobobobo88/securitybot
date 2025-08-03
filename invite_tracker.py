@@ -47,6 +47,9 @@ class InviteTracker:
                 
                 print(f"Member {member} was invited by {used_invite.inviter}")
                 
+                # Post to invite tracker channel
+                await self.post_invite_tracker_message(member, used_invite.inviter)
+                
                 # Optional: Send welcome message with inviter info
                 # await self.send_welcome_message(member, used_invite.inviter)
                 
@@ -95,4 +98,36 @@ class InviteTracker:
         for i, (user_id_str, count) in enumerate(leaderboard):
             if int(user_id_str) == user_id:
                 return i + 1
-        return 0  # Not in top 10 
+        return 0  # Not in top 10
+
+    async def post_invite_tracker_message(self, member: discord.Member, inviter: discord.Member):
+        """Post invite tracking message to the tracker channel"""
+        try:
+            if config.INVITE_TRACKER_CHANNEL_ID:
+                channel = self.bot.get_channel(config.INVITE_TRACKER_CHANNEL_ID)
+                if channel:
+                    # Get inviter's total invite count
+                    inviter_count = self.data_manager.get_invite_count(inviter.id)
+                    
+                    embed = discord.Embed(
+                        title="🎉 New Member Joined!",
+                        description=f"**{member.mention}** joined the server!",
+                        color=config.EMBED_COLORS['success']
+                    )
+                    embed.add_field(
+                        name="👤 Invited by",
+                        value=f"{inviter.mention}",
+                        inline=True
+                    )
+                    embed.add_field(
+                        name="📊 Inviter's Total",
+                        value=f"{inviter_count} invites",
+                        inline=True
+                    )
+                    embed.set_thumbnail(url=member.display_avatar.url)
+                    embed.timestamp = discord.utils.utcnow()
+                    
+                    await channel.send(embed=embed)
+                    
+        except Exception as e:
+            print(f"Error posting to invite tracker channel: {e}") 

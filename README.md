@@ -82,6 +82,8 @@ VOUCH_CHANNEL_ID=1234567890123456789
 # Multiple order channels - comma-separated IDs
 ORDER_CHANNEL_IDS=1234567890123456789,9876543210987654321
 SUPPORT_CHANNEL_ID=1234567890123456789
+# Invite tracker channel (optional - set to 0 to disable)
+INVITE_TRACKER_CHANNEL_ID=1234567890123456789
 
 # Admin role for unlimited vouches
 ADMIN_ROLE_ID=1234567890123456789
@@ -105,6 +107,7 @@ MUTED_ROLE_ID=1234567890123456789
 - `/invites` - Check your invite count
 - `/leaderboard` - View points leaderboard
 - `/scan` - Scan all members for verification status (Admin only)
+- `/inviteboard` - Display invite leaderboard in tracker channel (Admin only)
 
 ## Features in Detail
 

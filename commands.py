@@ -83,6 +83,84 @@ class BotCommands(commands.Cog):
 
 
 
+    @app_commands.command(name="inviteboard", description="Display invite leaderboard in tracker channel (Admin only)")
+    async def inviteboard(self, interaction: discord.Interaction):
+        """Display invite leaderboard in the tracker channel"""
+        try:
+            # Check if user has admin role
+            has_admin_role = any(role.id == config.ADMIN_ROLE_ID for role in interaction.user.roles)
+            if not has_admin_role:
+                await interaction.response.send_message(
+                    "You don't have permission to use this command.",
+                    ephemeral=True
+                )
+                return
+
+            # Check if tracker channel is configured
+            if not config.INVITE_TRACKER_CHANNEL_ID:
+                await interaction.response.send_message(
+                    "Invite tracker channel not configured. Set INVITE_TRACKER_CHANNEL_ID in .env",
+                    ephemeral=True
+                )
+                return
+
+            channel = self.bot.get_channel(config.INVITE_TRACKER_CHANNEL_ID)
+            if not channel:
+                await interaction.response.send_message(
+                    "Invite tracker channel not found. Check the channel ID.",
+                    ephemeral=True
+                )
+                return
+
+            await interaction.response.send_message(
+                "Posting invite leaderboard to tracker channel...",
+                ephemeral=True
+            )
+
+            # Get leaderboard
+            leaderboard = self.data_manager.get_invites_leaderboard(10)
+            
+            if not leaderboard:
+                embed = discord.Embed(
+                    title="📊 Invite Leaderboard",
+                    description="No invites tracked yet!",
+                    color=config.EMBED_COLORS['info']
+                )
+            else:
+                embed = discord.Embed(
+                    title="📊 Invite Leaderboard",
+                    description="Top 10 members by invites",
+                    color=config.EMBED_COLORS['success']
+                )
+                
+                leaderboard_text = ""
+                for i, (user_id, invites) in enumerate(leaderboard):
+                    user = self.bot.get_user(int(user_id))
+                    username = user.name if user else f"User {user_id}"
+                    medal = "🥇" if i == 0 else "🥈" if i == 1 else "🥉" if i == 2 else f"{i+1}."
+                    leaderboard_text += f"{medal} {username}: {invites} invites\n"
+                
+                embed.add_field(
+                    name="🏆 Rankings",
+                    value=leaderboard_text,
+                    inline=False
+                )
+            
+            embed.timestamp = discord.utils.utcnow()
+            await channel.send(embed=embed)
+            
+            await interaction.followup.send(
+                "Invite leaderboard posted!",
+                ephemeral=True
+            )
+            
+        except Exception as e:
+            print(f"Error in inviteboard command: {e}")
+            await interaction.response.send_message(
+                "Error posting invite leaderboard. Please try again.",
+                ephemeral=True
+            )
+
     @app_commands.command(name="scan", description="Scan all members for verification status (Admin only)")
     async def scan_members(self, interaction: discord.Interaction):
         """Scan all members and mute unverified ones"""

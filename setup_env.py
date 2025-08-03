@@ -24,6 +24,7 @@ def setup_env():
         print("   - VOUCH_CHANNEL_ID")
         print("   - ORDER_CHANNEL_IDS")
         print("   - SUPPORT_CHANNEL_ID")
+        print("   - INVITE_TRACKER_CHANNEL_ID (optional)")
         print("   - ADMIN_ROLE_ID")
         print("   - VERIFIED_ROLE_ID")
         print("   - MUTED_ROLE_ID")
