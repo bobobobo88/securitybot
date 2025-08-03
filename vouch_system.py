@@ -89,7 +89,108 @@ class VouchSystem:
                                 raise Exception(f"HTTP {response.status}")
                 except Exception as e3:
                     print(f"Strategy 3 failed: {e3}")
-                    raise Exception(f"All download strategies failed. Last error: {e3}")
+                    
+                    # Strategy 4: Try with different CDN endpoints
+                    try:
+                        print("Strategy 4: Alternative CDN endpoints")
+                        # Try different Discord CDN endpoints
+                        cdn_urls = [
+                            attachment.url.replace('cdn.discordapp.com', 'media.discordapp.net'),
+                            attachment.url.replace('cdn.discordapp.com', 'images-ext-1.discordapp.net'),
+                            attachment.url.replace('cdn.discordapp.com', 'images-ext-2.discordapp.net'),
+                        ]
+                        
+                        for cdn_url in cdn_urls:
+                            try:
+                                print(f"Trying CDN URL: {cdn_url}")
+                                async with aiohttp.ClientSession() as session:
+                                    async with session.get(cdn_url, headers=headers, timeout=30) as response:
+                                        if response.status == 200:
+                                            data = await response.read()
+                                            print(f"Strategy 4 successful: {len(data)} bytes")
+                                            return BytesIO(data)
+                            except Exception as cdn_error:
+                                print(f"CDN URL failed: {cdn_error}")
+                                continue
+                        
+                        raise Exception("All CDN endpoints failed")
+                    except Exception as e4:
+                        print(f"Strategy 4 failed: {e4}")
+                        
+                        # Strategy 5: Try with session cookies and more aggressive headers
+                        try:
+                            print("Strategy 5: Aggressive browser simulation")
+                            aggressive_headers = {
+                                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
+                                'Accept-Language': 'en-US,en;q=0.9',
+                                'Accept-Encoding': 'gzip, deflate, br',
+                                'Referer': 'https://discord.com/channels/@me',
+                                'DNT': '1',
+                                'Connection': 'keep-alive',
+                                'Upgrade-Insecure-Requests': '1',
+                                'Sec-Fetch-Dest': 'image',
+                                'Sec-Fetch-Mode': 'no-cors',
+                                'Sec-Fetch-Site': 'same-site',
+                                'Cache-Control': 'no-cache',
+                                'Pragma': 'no-cache'
+                            }
+                            
+                            async with aiohttp.ClientSession() as session:
+                                async with session.get(attachment.url, headers=aggressive_headers, timeout=30) as response:
+                                    if response.status == 200:
+                                        data = await response.read()
+                                        print(f"Strategy 5 successful: {len(data)} bytes")
+                                        return BytesIO(data)
+                                    else:
+                                        raise Exception(f"HTTP {response.status}")
+                        except Exception as e5:
+                            print(f"Strategy 5 failed: {e5}")
+                            
+                            # Strategy 6: Try using bot's HTTP session
+                            try:
+                                print("Strategy 6: Using bot's HTTP session")
+                                # Use the bot's own HTTP session which might have different permissions
+                                async with self.bot.http.session.get(attachment.url, timeout=30) as response:
+                                    if response.status == 200:
+                                        data = await response.read()
+                                        print(f"Strategy 6 successful: {len(data)} bytes")
+                                        return BytesIO(data)
+                                    else:
+                                        raise Exception(f"HTTP {response.status}")
+                            except Exception as e6:
+                                print(f"Strategy 6 failed: {e6}")
+                                
+                                # Strategy 7: Try with different URL parameters
+                                try:
+                                    print("Strategy 7: Modified URL parameters")
+                                    # Try adding different parameters to the URL
+                                    base_url = attachment.url.split('?')[0]
+                                    modified_urls = [
+                                        f"{base_url}?size=4096",
+                                        f"{base_url}?size=2048", 
+                                        f"{base_url}?size=1024",
+                                        f"{base_url}?format=webp",
+                                        f"{base_url}?format=png"
+                                    ]
+                                    
+                                    for modified_url in modified_urls:
+                                        try:
+                                            print(f"Trying modified URL: {modified_url}")
+                                            async with aiohttp.ClientSession() as session:
+                                                async with session.get(modified_url, headers=headers, timeout=30) as response:
+                                                    if response.status == 200:
+                                                        data = await response.read()
+                                                        print(f"Strategy 7 successful: {len(data)} bytes")
+                                                        return BytesIO(data)
+                                        except Exception as url_error:
+                                            print(f"Modified URL failed: {url_error}")
+                                            continue
+                                    
+                                    raise Exception("All modified URLs failed")
+                                except Exception as e7:
+                                    print(f"Strategy 7 failed: {e7}")
+                                    raise Exception(f"All download strategies failed. Last error: {e7}")
 
     async def process_vouch(self, message: discord.Message):
         """Process a vouch image - watermark and award points"""
