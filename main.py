@@ -75,6 +75,10 @@ class BobsDiscountBot(commands.Bot):
         await self.invite_tracker.handle_member_join(member)
         await self.verification_system.check_and_mute_unverified(member)
 
+    async def on_member_remove(self, member):
+        """Handle member leaves for invite tracking"""
+        await self.invite_tracker.handle_member_leave(member)
+
     async def on_invite_create(self, invite):
         """Handle new invite creation"""
         # Update invite cache

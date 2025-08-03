@@ -83,6 +83,25 @@ class DataManager:
         
         await self.save_json(self.invites_file, self.invites)
 
+    async def remove_invite(self, inviter_id: int, invitee_id: int):
+        """Remove an invite (when member leaves)"""
+        inviter_id_str = str(inviter_id)
+        invitee_id_str = str(invitee_id)
+        
+        # Decrement inviter's count
+        current_invites = self.invites.get(inviter_id_str, 0)
+        if current_invites > 0:
+            self.invites[inviter_id_str] = current_invites - 1
+        
+        # Remove invite relationship
+        if 'relationships' in self.invites and invitee_id_str in self.invites['relationships']:
+            del self.invites['relationships'][invitee_id_str]
+        
+        print(f"Removing invite: inviter={inviter_id_str}, invitee={invitee_id_str}")
+        print(f"Updated invites data: {self.invites}")
+        
+        await self.save_json(self.invites_file, self.invites)
+
     def get_inviter(self, user_id: int) -> Optional[int]:
         """Get who invited a user"""
         relationships = self.invites.get('relationships', {})

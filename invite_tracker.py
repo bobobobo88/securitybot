@@ -135,4 +135,63 @@ class InviteTracker:
                     await channel.send(embed=embed)
                     
         except Exception as e:
-            print(f"Error posting to invite tracker channel: {e}") 
+            print(f"Error posting to invite tracker channel: {e}")
+
+    async def handle_member_leave(self, member: discord.Member):
+        """Handle member leave - remove invite point from inviter"""
+        try:
+            print(f"Member {member} ({member.id}) left the server")
+            
+            # Get who invited this member
+            inviter_id = self.data_manager.get_inviter(member.id)
+            print(f"Inviter ID for {member.id}: {inviter_id}")
+            
+            if inviter_id:
+                # Remove invite point from inviter
+                await self.data_manager.remove_invite(inviter_id, member.id)
+                
+                # Get inviter member object
+                inviter = member.guild.get_member(inviter_id)
+                inviter_name = inviter.name if inviter else f"User {inviter_id}"
+                
+                print(f"Member {member} left. Removed invite point from {inviter_name} ({inviter_id})")
+                
+                # Post to invite tracker channel
+                await self.post_member_leave_message(member, inviter_id, inviter_name)
+            else:
+                print(f"Member {member} left but no inviter found")
+                
+        except Exception as e:
+            print(f"Error handling member leave: {e}")
+
+    async def post_member_leave_message(self, member: discord.Member, inviter_id: int, inviter_name: str):
+        """Post member leave message to the tracker channel"""
+        try:
+            if config.INVITE_TRACKER_CHANNEL_ID:
+                channel = self.bot.get_channel(config.INVITE_TRACKER_CHANNEL_ID)
+                if channel:
+                    # Get inviter's updated total invite count
+                    inviter_count = self.data_manager.get_invite_count(inviter_id)
+                    
+                    embed = discord.Embed(
+                        title="👋 Member Left",
+                        description=f"**{member.mention}** left the server.",
+                        color=config.EMBED_COLORS['warning']
+                    )
+                    embed.add_field(
+                        name="👤 Was invited by",
+                        value=f"<@{inviter_id}>",
+                        inline=True
+                    )
+                    embed.add_field(
+                        name="📊 Inviter's Total",
+                        value=f"{inviter_count} invites",
+                        inline=True
+                    )
+                    embed.set_thumbnail(url=member.display_avatar.url)
+                    embed.timestamp = discord.utils.utcnow()
+                    
+                    await channel.send(embed=embed)
+                    
+        except Exception as e:
+            print(f"Error posting member leave message: {e}") 

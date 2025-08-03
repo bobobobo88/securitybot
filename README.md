@@ -20,6 +20,7 @@ A comprehensive auto-moderation Discord bot designed specifically for Bob's Disc
 ### 📊 Point & Invite Tracking
 - **Point System**: Persistent point balance tracking for all users
 - **Invite Tracking**: Monitors who invited each new member
+- **Member Leave Tracking**: Removes invite points when members leave
 - **Leaderboards**: Display top users by points and invites
 - **Statistics**: Detailed tracking and reporting
 
