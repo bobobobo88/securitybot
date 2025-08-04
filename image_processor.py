@@ -82,7 +82,7 @@ class ImageProcessor:
                 raise e
 
     def apply_watermark(self, image_data: BytesIO) -> BytesIO:
-        """Apply watermark to image"""
+        """Apply watermark to image with size optimization"""
         try:
             # Open the main image
             main_image = Image.open(image_data)
@@ -108,10 +108,45 @@ class ImageProcessor:
             # Paste watermark with alpha blending
             result.paste(watermark, (x, y), watermark)
             
-            # Save to BytesIO
+            # Optimize image size for Discord (max 8MB, target under 5MB)
             output = BytesIO()
-            result.save(output, format='PNG', quality=95)
-            output.seek(0)
+            
+            # Try different quality settings to get optimal file size
+            quality_settings = [85, 75, 65, 55]
+            max_size_bytes = 5 * 1024 * 1024  # 5MB target
+            
+            for quality in quality_settings:
+                output.seek(0)
+                output.truncate(0)
+                
+                # Save with current quality
+                result.save(output, format='JPEG', quality=quality, optimize=True)
+                output.seek(0)
+                
+                # Check file size
+                current_size = len(output.getvalue())
+                print(f"Image size with quality {quality}: {current_size / 1024 / 1024:.2f}MB")
+                
+                if current_size <= max_size_bytes:
+                    print(f"Image optimized successfully: {current_size / 1024 / 1024:.2f}MB")
+                    break
+                
+                # If still too large, try resizing the image
+                if quality == quality_settings[-1]:  # Last quality setting
+                    print("Image still too large, resizing...")
+                    # Resize image to reduce file size
+                    scale_factor = 0.8
+                    new_width = int(result.width * scale_factor)
+                    new_height = int(result.height * scale_factor)
+                    result = result.resize((new_width, new_height), Image.Resampling.LANCZOS)
+                    
+                    # Try saving again with highest quality
+                    output.seek(0)
+                    output.truncate(0)
+                    result.save(output, format='JPEG', quality=85, optimize=True)
+                    output.seek(0)
+                    final_size = len(output.getvalue())
+                    print(f"Resized image size: {final_size / 1024 / 1024:.2f}MB")
             
             return output
             

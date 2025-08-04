@@ -116,14 +116,22 @@ class VouchSystem:
                 # NOW delete the original message
                 await message.delete()
                 
-                # Upload watermarked image
-                file = discord.File(watermarked_image, filename="vouch_watermarked.png")
+                # Upload watermarked image (now JPEG format for better compression)
+                file = discord.File(watermarked_image, filename="vouch_watermarked.jpg")
                 
                 # Send watermarked image
-                await message.channel.send(
-                    f"**Vouch from {message.author.mention}**",
-                    file=file
-                )
+                try:
+                    await message.channel.send(
+                        f"**Vouch from {message.author.mention}**",
+                        file=file
+                    )
+                except discord.HTTPException as e:
+                    if "413" in str(e) or "Payload Too Large" in str(e):
+                        print(f"Image still too large after optimization: {e}")
+                        # Fall back to text-based vouch
+                        raise Exception("Image too large for Discord upload")
+                    else:
+                        raise e
 
                 # Award points
                 await self.data_manager.add_points(message.author.id, config.POINTS_PER_VOUCH)
