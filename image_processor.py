@@ -82,7 +82,7 @@ class ImageProcessor:
                 raise e
 
     def apply_watermark(self, image_data: BytesIO) -> BytesIO:
-        """Apply watermark to image with size optimization"""
+        """Apply watermark to image with aggressive size optimization"""
         try:
             # Open the main image
             main_image = Image.open(image_data)
@@ -108,47 +108,88 @@ class ImageProcessor:
             # Paste watermark with alpha blending
             result.paste(watermark, (x, y), watermark)
             
-            # Optimize image size for Discord (max 8MB, target under 5MB)
+            # Convert to RGB for JPEG saving (fixes RGBA issue)
+            if result.mode == 'RGBA':
+                # Create a white background
+                background = Image.new('RGB', result.size, (255, 255, 255))
+                background.paste(result, mask=result.split()[-1])  # Use alpha channel as mask
+                result = background
+            elif result.mode != 'RGB':
+                result = result.convert('RGB')
+            
+            # Aggressive optimization for Discord (max 8MB, target under 4MB for safety)
             output = BytesIO()
+            max_size_bytes = config.MAX_IMAGE_SIZE_MB * 1024 * 1024  # Use config value
             
-            # Try different quality settings to get optimal file size
-            quality_settings = [85, 75, 65, 55]
-            max_size_bytes = 5 * 1024 * 1024  # 5MB target
+            # Progressive optimization strategy
+            optimization_steps = [
+                {'quality': config.IMAGE_QUALITY_MAX, 'resize': 1.0},
+                {'quality': 75, 'resize': 1.0},
+                {'quality': 65, 'resize': 1.0},
+                {'quality': 55, 'resize': 1.0},
+                {'quality': 45, 'resize': 1.0},
+                {'quality': config.IMAGE_QUALITY_MAX, 'resize': 0.9},  # Resize to 90%
+                {'quality': 75, 'resize': 0.9},
+                {'quality': 65, 'resize': 0.9},
+                {'quality': 55, 'resize': 0.9},
+                {'quality': config.IMAGE_QUALITY_MAX, 'resize': 0.8},  # Resize to 80%
+                {'quality': 75, 'resize': 0.8},
+                {'quality': 65, 'resize': 0.8},
+                {'quality': config.IMAGE_QUALITY_MAX, 'resize': 0.7},  # Resize to 70%
+                {'quality': 75, 'resize': 0.7},
+                {'quality': config.IMAGE_QUALITY_MAX, 'resize': 0.6},  # Resize to 60%
+                {'quality': 75, 'resize': 0.6},
+                {'quality': config.IMAGE_QUALITY_MAX, 'resize': 0.5},  # Resize to 50%
+                {'quality': 75, 'resize': 0.5},
+            ]
             
-            for quality in quality_settings:
+            current_image = result
+            final_output = None
+            
+            for i, step in enumerate(optimization_steps):
                 output.seek(0)
                 output.truncate(0)
                 
+                # Apply resize if needed
+                if step['resize'] != 1.0:
+                    new_width = int(current_image.width * step['resize'])
+                    new_height = int(current_image.height * step['resize'])
+                    current_image = current_image.resize((new_width, new_height), Image.Resampling.LANCZOS)
+                
                 # Save with current quality
-                result.save(output, format='JPEG', quality=quality, optimize=True)
+                current_image.save(output, format='JPEG', quality=step['quality'], optimize=True)
                 output.seek(0)
                 
                 # Check file size
                 current_size = len(output.getvalue())
-                print(f"Image size with quality {quality}: {current_size / 1024 / 1024:.2f}MB")
+                print(f"Step {i+1}: Quality {step['quality']}, Resize {step['resize']}, Size: {current_size / 1024 / 1024:.2f}MB")
                 
                 if current_size <= max_size_bytes:
                     print(f"Image optimized successfully: {current_size / 1024 / 1024:.2f}MB")
+                    final_output = output
                     break
                 
-                # If still too large, try resizing the image
-                if quality == quality_settings[-1]:  # Last quality setting
-                    print("Image still too large, resizing...")
-                    # Resize image to reduce file size
-                    scale_factor = 0.8
-                    new_width = int(result.width * scale_factor)
-                    new_height = int(result.height * scale_factor)
-                    result = result.resize((new_width, new_height), Image.Resampling.LANCZOS)
-                    
-                    # Try saving again with highest quality
-                    output.seek(0)
-                    output.truncate(0)
-                    result.save(output, format='JPEG', quality=85, optimize=True)
-                    output.seek(0)
-                    final_size = len(output.getvalue())
-                    print(f"Resized image size: {final_size / 1024 / 1024:.2f}MB")
+                # If this is the last step and still too large, use it anyway
+                if i == len(optimization_steps) - 1:
+                    print(f"Warning: Image still large ({current_size / 1024 / 1024:.2f}MB) but using anyway")
+                    final_output = output
             
-            return output
+            if final_output is None:
+                # Fallback: create a minimal version
+                print("Creating minimal fallback image")
+                final_output = BytesIO()
+                # Convert to RGB and save with minimal quality
+                if current_image.mode == 'RGBA':
+                    # Create a white background
+                    background = Image.new('RGB', current_image.size, (255, 255, 255))
+                    background.paste(current_image, mask=current_image.split()[-1])
+                    rgb_image = background
+                else:
+                    rgb_image = current_image.convert('RGB')
+                rgb_image.save(final_output, format='JPEG', quality=config.IMAGE_QUALITY_MIN, optimize=True)
+                final_output.seek(0)
+            
+            return final_output
             
         except Exception as e:
             print(f"Error applying watermark: {e}")

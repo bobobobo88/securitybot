@@ -15,8 +15,7 @@ VOUCH_CHANNEL_ID = int(os.getenv('VOUCH_CHANNEL_ID', 1234567890123456789))
 ORDER_CHANNEL_IDS = [int(id.strip()) for id in os.getenv('ORDER_CHANNEL_IDS', '1234567890123456789,9876543210987654321').split(',') if id.strip() and id.strip().isdigit()]
 SUPPORT_CHANNEL_ID = int(os.getenv('SUPPORT_CHANNEL_ID', 1234567890123456789))
 # Invite tracker channel (optional)
-invite_tracker_id_str = os.getenv('INVITE_TRACKER_CHANNEL_ID', '0')
-INVITE_TRACKER_CHANNEL_ID = int(invite_tracker_id_str) if invite_tracker_id_str.isdigit() else None
+INVITE_TRACKER_CHANNEL_ID = int(os.getenv('INVITE_TRACKER_CHANNEL_ID', 0))
 
 # Admin role for unlimited vouches
 ADMIN_ROLE_ID = int(os.getenv('ADMIN_ROLE_ID', 1234567890123456789))
@@ -34,6 +33,12 @@ POINTS_PER_VOUCH = 1
 # File Paths
 WATERMARK_PATH = "assets/watermark.png"
 DATA_DIR = "data"
+
+# Image Processing Settings
+MAX_IMAGE_SIZE_MB = 4  # Target size for optimized images (4MB for safety margin)
+DISCORD_MAX_SIZE_MB = 8  # Discord's actual limit
+IMAGE_QUALITY_MIN = 30  # Minimum quality for fallback images
+IMAGE_QUALITY_MAX = 85  # Maximum quality for initial optimization
 
 # Colors for embeds
 EMBED_COLORS = {

@@ -65,7 +65,7 @@ class Moderation:
             
             # Send ephemeral message to the user
             await message.author.send(
-                "Please contact staff for orders and support.",
+                f"Please use `/order` in order channels or `/ticket` in ticket channels.",
                 delete_after=10
             )
             
@@ -82,7 +82,7 @@ class Moderation:
             
             # Send ephemeral message to the user
             await message.author.send(
-                "Please contact staff for orders and support.",
+                f"Please use `/order` in order channels or `/ticket` in ticket channels.",
                 delete_after=10
             )
             

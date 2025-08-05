@@ -60,6 +60,8 @@ class DataManager:
         """Get user's invite count"""
         user_id_str = str(user_id)
         count = self.invites.get(user_id_str, 0)
+        print(f"Getting invite count for {user_id_str}: {count}")
+        print(f"Current invites data: {self.invites}")
         return count
 
     async def add_invite(self, inviter_id: int, invitee_id: int):
@@ -70,6 +72,9 @@ class DataManager:
         # Increment inviter's count
         current_invites = self.invites.get(inviter_id_str, 0)
         self.invites[inviter_id_str] = current_invites + 1
+        
+        print(f"Adding invite: inviter={inviter_id_str}, invitee={invitee_id_str}")
+        print(f"Current invites data: {self.invites}")
         
         # Store invite relationship
         if 'relationships' not in self.invites:
@@ -91,6 +96,9 @@ class DataManager:
         # Remove invite relationship
         if 'relationships' in self.invites and invitee_id_str in self.invites['relationships']:
             del self.invites['relationships'][invitee_id_str]
+        
+        print(f"Removing invite: inviter={inviter_id_str}, invitee={invitee_id_str}")
+        print(f"Updated invites data: {self.invites}")
         
         await self.save_json(self.invites_file, self.invites)
 
@@ -136,7 +144,10 @@ class DataManager:
 
     def get_invites_leaderboard(self, limit: int = 10) -> list:
         """Get top users by invites"""
+        print(f"Getting invite leaderboard. Raw invites data: {self.invites}")
         # Filter out relationships from invite data
         invite_counts = {k: v for k, v in self.invites.items() if k != 'relationships'}
+        print(f"Filtered invite counts: {invite_counts}")
         sorted_users = sorted(invite_counts.items(), key=lambda x: x[1], reverse=True)
+        print(f"Sorted users: {sorted_users}")
         return sorted_users[:limit] 
